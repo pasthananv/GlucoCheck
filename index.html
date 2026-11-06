@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlucoCheck – Diabetes Risk Screening</title>
+<style>
+  :root {
+    --ink: #1b2440; --muted: #5f6b85; --line: #e3e7f2; --card: rgba(255,255,255,.92);
+    --brand: #0ea5a4; --brand2: #6366f1; --brand3: #a855f7;
+    --grad: linear-gradient(135deg, var(--brand) 0%, var(--brand2) 55%, var(--brand3) 100%);
+    --low: #16a34a; --mod: #f59e0b; --high: #e11d48;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); line-height: 1.5;
+    background: radial-gradient(1200px 600px at 10% -10%, #d7f5f1 0%, transparent 60%),
+                radial-gradient(1000px 600px at 110% 20%, #e6e3ff 0%, transparent 55%),
+                linear-gradient(180deg, #f7f9ff 0%, #f3f0ff 100%);
+    background-attachment: fixed; min-height: 100vh;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+
+  header.hero { background: var(--grad); color: #fff; padding: 64px 0 84px; position: relative; overflow: hidden; }
+  header.hero::before, header.hero::after { content: ""; position: absolute; border-radius: 50%; filter: blur(10px); opacity: .35; }
+  header.hero::before { width: 320px; height: 320px; background: radial-gradient(circle, #fff 0%, transparent 70%); top: -120px; right: -60px; }
+  header.hero::after { width: 260px; height: 260px; background: radial-gradient(circle, #5eead4 0%, transparent 70%); bottom: -120px; left: -40px; }
+  .hero .wrap { position: relative; z-index: 1; }
+  .hero h1 { margin: 0 0 8px; font-size: 2.4rem; letter-spacing: -.5px; }
+  .hero p { margin: 0 0 20px; opacity: .95; font-size: 1.15rem; }
+  .hero .stat { display: inline-block; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
+                backdrop-filter: blur(6px); border-radius: 999px; padding: 8px 16px; font-size: .95rem; }
+
+  .btn { display: inline-block; border: 0; border-radius: 999px; background: var(--grad); background-size: 150% 150%;
+         color: #fff; font-size: 1rem; font-weight: 600; padding: 13px 28px; cursor: pointer; text-decoration: none;
+         box-shadow: 0 8px 20px -8px rgba(99,102,241,.6); transition: transform .15s, box-shadow .15s, background-position .4s; }
+  .btn:hover { transform: translateY(-2px); background-position: 100% 0; box-shadow: 0 12px 24px -8px rgba(99,102,241,.7); }
+  .btn:disabled { opacity: .6; cursor: wait; transform: none; }
+  .hero .btn { background: #fff; color: var(--brand2); margin-top: 22px; box-shadow: 0 10px 24px -10px rgba(0,0,0,.35); }
+
+  .disclaimer { background: linear-gradient(135deg, #fff7e0 0%, #ffeccc 100%); border: 1px solid #f6cf7d; border-radius: 14px;
+                padding: 14px 18px; margin: -44px 0 24px; position: relative; font-size: .95rem; box-shadow: 0 10px 30px -15px rgba(180,120,0,.4); }
+  .disclaimer strong { color: #8a5a00; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 18px;
+          box-shadow: 0 12px 30px -20px rgba(60,60,140,.35); position: relative; overflow: hidden; }
+  .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--grad); }
+  .card h2 { margin: 0 0 14px; font-size: 1.15rem; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .q { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 8px; border-top: 1px solid var(--line);
+       border-radius: 8px; transition: background .2s; }
+  .q:first-of-type { border-top: 0; }
+  .q label.text { flex: 1; }
+  .q small { display: block; color: var(--muted); }
+  .q.missing { background: linear-gradient(90deg, #ffe4ea 0%, transparent 100%); }
+  .q.missing label.text::after { content: " — please answer"; color: var(--high); font-size: .85rem; }
+  select, input[type=number] { font-size: 1rem; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px;
+                               background: #fff; min-width: 150px; color: var(--ink); }
+  select:focus, input:focus { outline: 2px solid var(--brand2); outline-offset: 1px; }
+
+  /* Yes / No: no fill until clicked */
+  .yn { display: flex; gap: 8px; }
+  .yn input { position: absolute; opacity: 0; pointer-events: none; }
+  .yn label { min-width: 64px; text-align: center; border: 1.5px solid #cfd5e6; border-radius: 999px; padding: 6px 16px;
+              cursor: pointer; user-select: none; background: transparent; color: var(--ink); transition: all .15s; }
+  .yn label:hover { border-color: var(--brand2); background: linear-gradient(135deg, rgba(14,165,164,.08), rgba(99,102,241,.08)); }
+  .yn input:checked + label { background: var(--grad); border-color: transparent; color: #fff; box-shadow: 0 6px 14px -6px rgba(99,102,241,.7); }
+  .yn input:focus-visible + label { outline: 2px solid var(--brand2); outline-offset: 2px; }
+  #bmiOut { color: var(--brand2); font-size: .9rem; font-weight: 600; }
+
+  .submit-row { text-align: center; margin: 8px 0 32px; }
+  #result { display: none; }
+  .meter { position: relative; height: 14px; border-radius: 7px; margin: 18px 0 6px;
+           background: linear-gradient(90deg, var(--low) 0%, #84cc16 30%, var(--mod) 50%, #f97316 70%, var(--high) 100%); }
+  .meter .marker { position: absolute; top: 50%; left: 0; width: 22px; height: 22px; border-radius: 50%; background: #fff;
+                   border: 4px solid var(--ink); transform: translate(-50%, -50%); transition: left .8s ease; box-shadow: 0 4px 10px rgba(0,0,0,.25); }
+  .meter-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; }
+  .risk-num { font-size: 3rem; font-weight: 800; margin: 0; line-height: 1.1; }
+  .badge { display: inline-block; color: #fff; border-radius: 999px; padding: 3px 14px; font-size: .9rem; font-weight: 600; }
+  #tips { padding-left: 0; list-style: none; }
+  #tips li { margin-bottom: 8px; padding: 10px 14px; border-radius: 10px;
+             background: linear-gradient(135deg, rgba(14,165,164,.08) 0%, rgba(168,85,247,.08) 100%); border-left: 3px solid var(--brand2); }
+  .err { color: var(--high); text-align: center; }
+  footer { color: var(--muted); font-size: .85rem; text-align: center; padding: 24px 0 40px; }
+
+  @media (max-width: 560px) {
+    .q { flex-direction: column; align-items: flex-start; }
+    .hero h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>🩺 GlucoCheck</h1>
+    <p>Find out your diabetes risk in 2 minutes — no blood test needed.</p>
+    <span class="stat">About 4 in 10 adults with diabetes don't know they have it.</span><br>
+    <a class="btn" href="#form">Start the check ↓</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="disclaimer">
+    <strong>⚠️ Disclaimer:</strong> GlucoCheck is a student machine-learning project and a <strong>screening tool only</strong>.
+    It does <strong>not</strong> diagnose diabetes and is not a substitute for advice from a doctor. Only a blood test
+    (fasting blood sugar or HbA1c) can confirm diabetes. The model was trained on US survey data (CDC BRFSS 2015) and is
+    about 75% accurate, so it can be wrong. If you have symptoms or concerns, please see a healthcare professional.
+    Your answers are not stored.
+  </div>
+
+  <form id="form">
+    <div class="card">
+      <h2>1. About you</h2>
+      <div class="q"><label class="text" for="Age">Age</label>
+        <select id="Age" name="Age">
+          <option value="1">18–24</option><option value="2">25–29</option><option value="3">30–34</option>
+          <option value="4">35–39</option><option value="5">40–44</option><option value="6">45–49</option>
+          <option value="7">50–54</option><option value="8">55–59</option><option value="9">60–64</option>
+          <option value="10">65–69</option><option value="11">70–74</option><option value="12">75–79</option>
+          <option value="13">80 or older</option>
+        </select></div>
+      <div class="q"><label class="text" for="Sex">Sex</label>
+        <select id="Sex" name="Sex"><option value="0">Female</option><option value="1">Male</option></select></div>
+      <div class="q"><label class="text" for="height">Height (cm)</label>
+        <input type="number" id="height" min="100" max="230" value="165" required></div>
+      <div class="q"><label class="text" for="weight">Weight (kg)<small id="bmiOut"></small></label>
+        <input type="number" id="weight" min="25" max="250" value="65" required></div>
+      <div class="q"><label class="text" for="Education">Highest education</label>
+        <select id="Education" name="Education">
+          <option value="1">Never attended school</option><option value="2">Elementary school</option>
+          <option value="3">Some high school</option><option value="4">High school graduate</option>
+          <option value="5">Some college / diploma</option><option value="6" selected>University graduate</option>
+        </select></div>
+      <div class="q"><label class="text" for="Income">Yearly household income<small>approx. in USD (1 USD ≈ 33 THB)</small></label>
+        <select id="Income" name="Income">
+          <option value="1">Less than $10,000</option><option value="2">$10,000–15,000</option>
+          <option value="3">$15,000–20,000</option><option value="4">$20,000–25,000</option>
+          <option value="5">$25,000–35,000</option><option value="6">$35,000–50,000</option>
+          <option value="7">$50,000–75,000</option><option value="8">More than $75,000</option>
+        </select></div>
+    </div>
+
+    <div class="card">
+      <h2>2. Medical history</h2>
+      <div class="q" data-yn="HighBP"><label class="text">Has a doctor ever told you that you have <b>high blood pressure</b>?</label></div>
+      <div class="q" data-yn="HighChol"><label class="text">Has a doctor ever told you that you have <b>high cholesterol</b>?</label></div>
+      <div class="q" data-yn="CholCheck"><label class="text">Have you had your cholesterol checked in the past 5 years?</label></div>
+      <div class="q" data-yn="Stroke"><label class="text">Have you ever had a <b>stroke</b>?</label></div>
+      <div class="q" data-yn="HeartDiseaseorAttack"><label class="text">Have you ever had <b>heart disease or a heart attack</b>?</label></div>
+      <div class="q" data-yn="DiffWalk"><label class="text">Do you have serious difficulty walking or climbing stairs?</label></div>
+    </div>
+
+    <div class="card">
+      <h2>3. Lifestyle</h2>
+      <div class="q" data-yn="PhysActivity"><label class="text">Have you exercised or done physical activity in the past 30 days (not counting your job)?</label></div>
+      <div class="q" data-yn="Fruits"><label class="text">Do you eat fruit at least once a day?</label></div>
+      <div class="q" data-yn="Veggies"><label class="text">Do you eat vegetables at least once a day?</label></div>
+      <div class="q" data-yn="Smoker"><label class="text">Have you smoked at least 100 cigarettes in your whole life?<small>About 5 packs</small></label></div>
+      <div class="q" data-yn="HvyAlcoholConsump"><label class="text">Do you drink heavily?<small>Men: more than 14 drinks/week · Women: more than 7 drinks/week</small></label></div>
+    </div>
+
+    <div class="card">
+      <h2>4. General health &amp; healthcare</h2>
+      <div class="q"><label class="text" for="GenHlth">In general, how is your health?</label>
+        <select id="GenHlth" name="GenHlth">
+          <option value="1">Excellent</option><option value="2">Very good</option><option value="3" selected>Good</option>
+          <option value="4">Fair</option><option value="5">Poor</option>
+        </select></div>
+      <div class="q"><label class="text" for="PhysHlth">In the past 30 days, how many days was your <b>physical</b> health not good?</label>
+        <input type="number" id="PhysHlth" name="PhysHlth" min="0" max="30" value="0" required></div>
+      <div class="q"><label class="text" for="MentHlth">In the past 30 days, how many days was your <b>mental</b> health not good?<small>Stress, depression, emotional problems</small></label>
+        <input type="number" id="MentHlth" name="MentHlth" min="0" max="30" value="0" required></div>
+      <div class="q" data-yn="AnyHealthcare"><label class="text">Do you have any health insurance or healthcare coverage?</label></div>
+      <div class="q" data-yn="NoDocbcCost"><label class="text">In the past year, did you need to see a doctor but couldn't because of the cost?</label></div>
+    </div>
+
+    <div class="submit-row"><button class="btn" id="submitBtn" type="submit">Check my risk</button></div>
+    <p class="err" id="err"></p>
+  </form>
+
+  <section class="card" id="result" aria-live="polite">
+    <h2>Your result</h2>
+    <p class="risk-num" id="riskNum"></p>
+    <span class="badge" id="badge"></span>
+    <div class="meter"><div class="marker" id="marker"></div></div>
+    <div class="meter-labels"><span>Low</span><span>Moderate</span><span>High</span></div>
+    <p id="summary"></p>
+    <h2>Precautions &amp; next steps</h2>
+    <ul id="tips"></ul>
+    <p style="color:var(--muted);font-size:.9rem">Reminder: this is an estimate from a machine-learning model, not a medical diagnosis.</p>
+    <div style="text-align:center"><button class="btn" type="button" onclick="window.scrollTo({top: document.getElementById('form').offsetTop, behavior:'smooth'})">Change my answers</button></div>
+  </section>
+</main>
+
+<footer>GlucoCheck · Student project · Model: XGBoost trained on the CDC BRFSS 2015 Diabetes Health Indicators dataset</footer>
+
+<script>
+  // Build Yes/No buttons for every question marked data-yn
+  document.querySelectorAll("[data-yn]").forEach(q => {
+    const name = q.dataset.yn;
+    const box = document.createElement("div");
+    box.className = "yn";
+    box.innerHTML = `
+      <input type="radio" id="${name}1" name="${name}" value="1"><label for="${name}1">Yes</label>
+      <input type="radio" id="${name}0" name="${name}" value="0"><label for="${name}0">No</label>`;
+    q.appendChild(box);
+    box.addEventListener("change", () => q.classList.remove("missing"));
+  });
+
+  // BMI from height + weight
+  const bmi = () => {
+    const h = +document.getElementById("height").value / 100, w = +document.getElementById("weight").value;
+    return h > 0 && w > 0 ? w / (h * h) : 0;
+  };
+  const showBmi = () => { const b = bmi(); document.getElementById("bmiOut").textContent = b ? `BMI: ${b.toFixed(1)}` : ""; };
+  document.getElementById("height").addEventListener("input", showBmi);
+  document.getElementById("weight").addEventListener("input", showBmi);
+  showBmi();
+
+  const COLORS = { low: "#16a34a", moderate: "#f59e0b", high: "#e11d48" };
+  const LABELS = { low: "Low risk", moderate: "Moderate risk", high: "High risk" };
+
+  document.getElementById("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = document.getElementById("err"), btn = document.getElementById("submitBtn");
+    err.textContent = "";
+    const missing = [...document.querySelectorAll("[data-yn]")]
+      .filter(q => !q.querySelector("input:checked"));
+    missing.forEach(q => q.classList.add("missing"));
+    if (missing.length) {
+      err.textContent = `Please answer all questions (${missing.length} left).`;
+      missing[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    const answers = Object.fromEntries(new FormData(e.target).entries());
+    answers.BMI = Math.round(bmi());
+
+    btn.disabled = true; btn.textContent = "Checking…";
+    try {
+      const res = await fetch("/predict", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(answers)
+      });
+      if (!res.ok) throw new Error("Server error " + res.status);
+      const out = await res.json();
+      const pct = Math.round(out.risk * 100);
+
+      document.getElementById("riskNum").textContent = pct + "%";
+      const badge = document.getElementById("badge");
+      badge.textContent = LABELS[out.level]; badge.style.background = COLORS[out.level];
+      document.getElementById("marker").style.left = pct + "%";
+      const num = document.getElementById("riskNum");
+      num.style.background = `linear-gradient(135deg, ${COLORS[out.level]}, var(--brand2))`;
+      num.style.webkitBackgroundClip = "text"; num.style.backgroundClip = "text"; num.style.color = "transparent";
+      document.getElementById("summary").textContent =
+        `Based on your answers, the model estimates a ${pct}% chance that you have prediabetes or diabetes.`;
+      document.getElementById("tips").innerHTML = out.precautions.map(t => `<li>${t}</li>`).join("");
+
+      const result = document.getElementById("result");
+      result.style.display = "block";
+      result.scrollIntoView({ behavior: "smooth" });
+    } catch (ex) {
+      err.textContent = "Could not reach the model. Is app.py running? (" + ex.message + ")";
+    } finally {
+      btn.disabled = false; btn.textContent = "Check my risk";
+    }
+  });
+</script>
+</body>
+</html>

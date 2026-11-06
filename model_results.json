@@ -1,0 +1,80 @@
+{
+  "comparison": {
+    "Logistic Regression": {
+      "Accuracy": 0.7458,
+      "Precision": 0.7372,
+      "Recall": 0.7639,
+      "F1": 0.7503,
+      "AUC": 0.8232,
+      "ConfusionMatrix": {
+        "TN": 5145,
+        "FP": 1925,
+        "FN": 1669,
+        "TP": 5400
+      },
+      "TrainSeconds": 0.0
+    },
+    "Random Forest": {
+      "Accuracy": 0.7489,
+      "Precision": 0.7292,
+      "Recall": 0.7918,
+      "F1": 0.7592,
+      "AUC": 0.8279,
+      "ConfusionMatrix": {
+        "TN": 4991,
+        "FP": 2079,
+        "FN": 1472,
+        "TP": 5597
+      },
+      "TrainSeconds": 0.9
+    },
+    "XGBoost": {
+      "Accuracy": 0.7534,
+      "Precision": 0.7326,
+      "Recall": 0.7981,
+      "F1": 0.764,
+      "AUC": 0.8292,
+      "ConfusionMatrix": {
+        "TN": 5011,
+        "FP": 2059,
+        "FN": 1427,
+        "TP": 5642
+      },
+      "TrainSeconds": 0.4
+    },
+    "LightGBM": {
+      "Accuracy": 0.7525,
+      "Precision": 0.7314,
+      "Recall": 0.798,
+      "F1": 0.7632,
+      "AUC": 0.8308,
+      "ConfusionMatrix": {
+        "TN": 4998,
+        "FP": 2072,
+        "FN": 1428,
+        "TP": 5641
+      },
+      "TrainSeconds": 1.3
+    }
+  },
+  "best_model": "XGBoost",
+  "best_params": {
+    "subsample": 0.8,
+    "n_estimators": 200,
+    "max_depth": 7,
+    "learning_rate": 0.03
+  },
+  "final_test_metrics": {
+    "Accuracy": 0.7536,
+    "Precision": 0.7322,
+    "Recall": 0.7997,
+    "F1": 0.7644,
+    "AUC": 0.8306,
+    "ConfusionMatrix": {
+      "TN": 5002,
+      "FP": 2068,
+      "FN": 1416,
+      "TP": 5653
+    }
+  }
+}
